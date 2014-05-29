@@ -16,8 +16,7 @@ public class RequestMessage {
     public static final int PRE_RESERVE_SEAT = 4;
     public static final int GET_SEATS = 5;
     public static final int CANCEL_PRE_RESERVE_SEAT = 6;
-    public static final int GET_RESERVATION = 7;
-    public static final int CANCEL_RESERVED_SEAT = 8;
+    
     
     private int messageType;
     private String data1;

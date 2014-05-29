@@ -63,23 +63,6 @@ public class ClientController {
         return seats;
     }
     
-    public Seat[] getReservation(int id){
-        
-        RequestMessage rm = new RequestMessage(RequestMessage.GET_RESERVATION, gson.toJson(id));
-
-        String jsonMsg = gson.toJson(rm);
-
-        //Envía petición al servidor
-        tcpClient.sendMessage(jsonMsg);
-
-        //Recibe respeusta del servidor
-        String msg = tcpClient.recieveMessage();
-
-        Seat s[] = gson.fromJson(msg, Seat[].class);
-        
-        return s;
-    }
-    
     public boolean preReserveSeat(Seat seat){
         String jsonSeat = gson.toJson(seat);
         String jsonUser = gson.toJson(getUser());
@@ -154,11 +137,10 @@ public class ClientController {
         return canceled;
     }
     
-    public boolean cancelReservedSeats(int id, Seat[] seats){
+    public boolean cancelReservations(int id){
         String jsonUser = gson.toJson(new User(id));
-        String jsonSeats = gson.toJson(seats);
         
-        RequestMessage rm = new RequestMessage(RequestMessage.CANCEL_RESERVED_SEAT, jsonUser, jsonSeats);
+        RequestMessage rm = new RequestMessage(RequestMessage.CANCEL_RESERVATION, jsonUser);
         
         String jsonMsg = gson.toJson(rm);
         
