@@ -26,10 +26,16 @@ public class MainMenu extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jLabel1 = new javax.swing.JLabel();
+        jLayeredPane1 = new javax.swing.JLayeredPane();
         btn_reservation = new javax.swing.JButton();
         btn_cancel_reservation = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jLabel1.setText("Bienvenido al sistema de reservación de asientos");
+
+        jLayeredPane1.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
 
         btn_reservation.setText("Reservaciones");
         btn_reservation.addActionListener(new java.awt.event.ActionListener() {
@@ -37,6 +43,8 @@ public class MainMenu extends javax.swing.JFrame {
                 btn_reservationActionPerformed(evt);
             }
         });
+        btn_reservation.setBounds(60, 10, 145, 59);
+        jLayeredPane1.add(btn_reservation, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
         btn_cancel_reservation.setText("Cancelar reservaciones");
         btn_cancel_reservation.addActionListener(new java.awt.event.ActionListener() {
@@ -44,40 +52,42 @@ public class MainMenu extends javax.swing.JFrame {
                 btn_cancel_reservationActionPerformed(evt);
             }
         });
+        btn_cancel_reservation.setBounds(60, 80, 145, 64);
+        jLayeredPane1.add(btn_cancel_reservation, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(54, 54, 54)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(btn_cancel_reservation)
-                    .addComponent(btn_reservation, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(76, Short.MAX_VALUE))
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jLayeredPane1)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(53, 53, 53)
-                .addComponent(btn_reservation, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(34, 34, 34)
-                .addComponent(btn_cancel_reservation, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(50, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLayeredPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btn_reservationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_reservationActionPerformed
-        new ReservationWindow().setVisible(true);
-        dispose();
-    }//GEN-LAST:event_btn_reservationActionPerformed
-
     private void btn_cancel_reservationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_cancel_reservationActionPerformed
         new CancelationWindow().setVisible(true);
         dispose();
     }//GEN-LAST:event_btn_cancel_reservationActionPerformed
+
+    private void btn_reservationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_reservationActionPerformed
+        new ReservationWindow().setVisible(true);
+        dispose();
+    }//GEN-LAST:event_btn_reservationActionPerformed
 
     /**
      * @param args the command line arguments
@@ -123,5 +133,7 @@ public class MainMenu extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btn_cancel_reservation;
     private javax.swing.JButton btn_reservation;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLayeredPane jLayeredPane1;
     // End of variables declaration//GEN-END:variables
 }
