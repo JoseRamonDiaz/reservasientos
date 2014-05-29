@@ -8,7 +8,6 @@ import Model.RequestMessage;
 import Model.Seat;
 import Model.User;
 import com.google.gson.Gson;
-import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
@@ -22,7 +21,6 @@ public class ReservationWindow extends javax.swing.JFrame {
 
     private ClientController clientController;
     private boolean isFirstPreReservedSeat = true;
-    private Stack stack = new Stack();
 
     /**
      * Creates new form ReservationWindow
@@ -31,13 +29,14 @@ public class ReservationWindow extends javax.swing.JFrame {
         lookAndFeel();
         initComponents();
         clientController = new ClientController(this);
+        seatCont = 0;
         initInterface();
     }
 
     //Actualiza el estado de los asientos.
     public void update(String msg) {
         Gson gson = new Gson();
-        System.out.print("Mensaje update " + msg);
+        System.out.println("Mensaje update " + msg);
         RequestMessage reqMsg = gson.fromJson(msg, RequestMessage.class);
         switch (reqMsg.getMessageType()) {
             case RequestMessage.PRE_RESERVE_SEAT: {
@@ -63,6 +62,8 @@ public class ReservationWindow extends javax.swing.JFrame {
                 Seat seat = gson.fromJson(data1, Seat.class);
                 User user = gson.fromJson(data2, User.class);
 
+
+
                 if (clientController.getUser().getId() != user.getId()) {
                     int row = seat.getRow() - 'A';
                     int seatNumber = seat.getSeatNumber() - 1;
@@ -70,6 +71,7 @@ public class ReservationWindow extends javax.swing.JFrame {
                     setSeatIcon(seatLabels[row][seatNumber], Seat.AVAILABLE);
                     clientController.getSeats()[row][seatNumber].setState(Seat.AVAILABLE);
                 }
+
                 break;
             }
             case RequestMessage.CONFIRM_RESERVATION: {
@@ -95,12 +97,21 @@ public class ReservationWindow extends javax.swing.JFrame {
                 Seat seat = gson.fromJson(data1, Seat.class);
                 User user = gson.fromJson(data2, User.class);
 
+                int row = seat.getRow() - 'A';
+                int seatNumber = seat.getSeatNumber() - 1;
+
                 if (clientController.getUser().getId() != user.getId()) {
-                    int row = seat.getRow() - 'A';
-                    int seatNumber = seat.getSeatNumber() - 1;
+
 
                     setSeatIcon(seatLabels[row][seatNumber], Seat.AVAILABLE);
                     clientController.getSeats()[row][seatNumber].setState(Seat.AVAILABLE);
+                } else {
+
+                    seat = clientController.getSeats()[row][seatNumber];
+                    JLabel seatLabel = seatLabels[row][seatNumber];
+                    seat.setState(Seat.AVAILABLE);
+                    setSeatIcon(seatLabel, Seat.AVAILABLE);
+                    seatCont--;
                 }
             }
             break;
@@ -148,20 +159,18 @@ public class ReservationWindow extends javax.swing.JFrame {
 
         if (seat.getState() == Seat.SELECTED) {
             cancel_preReserveSeat(seat, seatLabel);
-        } else if (seat.getState() == Seat.AVAILABLE && !hasReachedLimitSeats() && clientController.preReserveSeat(seat)) {
-            stack.push(seat);
-            stack.push(seatLabel);
+        } else if (seatCont == 5) {
+            JOptionPane.showMessageDialog(this, "Sólo puedes reservar 5 asientos.");
+        } else if (seat.getState() == Seat.AVAILABLE && clientController.preReserveSeat(seat)) {
             seat.setState(Seat.SELECTED);
             setSeatIcon(seatLabel, Seat.SELECTED);
             if (isFirstPreReservedSeat) {
                 showRemainingTime();
             }
             isFirstPreReservedSeat = false;
+            seatCont++;
         } else {
-            if(!hasReachedLimitSeats())
-                JOptionPane.showMessageDialog(this, "Este asiento ya fue reservado por otra persona, elija otro.");
-            else
-                JOptionPane.showMessageDialog(this, "Solo puede reservar hasta 5 asientos por sesión");
+            JOptionPane.showMessageDialog(this, "Este asiento ya fue reservado por otra persona, elija otro.");
         }
     }
 
@@ -169,8 +178,7 @@ public class ReservationWindow extends javax.swing.JFrame {
         if (clientController.cancel_preReserveSeat(seat)) {
             seat.setState(Seat.AVAILABLE);
             setSeatIcon(seatLabel, Seat.AVAILABLE);
-            stack.remove(seat);
-            stack.remove(seatLabel);
+            seatCont--;
         }
     }
 
@@ -407,11 +415,18 @@ public class ReservationWindow extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(255, 255, 255));
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosed(java.awt.event.WindowEvent evt) {
+                formWindowClosed(evt);
+            }
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
 
         panelSeats.setBackground(new java.awt.Color(255, 255, 255));
-        panelSeats.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
 
         seatD1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/SeatIcon_Availabe_0.gif"))); // NOI18N
         seatD1.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -1497,33 +1512,34 @@ public class ReservationWindow extends javax.swing.JFrame {
             }
         });
 
-        lblRemainingTime.setText(" ");
-
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addGap(0, 32, Short.MAX_VALUE)
+                .addComponent(panelSeats, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(30, 30, 30))
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(48, 48, 48)
-                .addComponent(btn_confirm)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btn_cancel)
-                .addGap(48, 48, 48))
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(25, 25, 25)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblRemainingTime)
-                    .addComponent(panelSeats, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(30, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(52, 52, 52)
+                        .addComponent(btn_confirm)
+                        .addGap(45, 45, 45)
+                        .addComponent(btn_cancel))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(45, 45, 45)
+                        .addComponent(lblRemainingTime, javax.swing.GroupLayout.PREFERRED_SIZE, 223, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(lblRemainingTime)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(23, 23, 23)
+                .addComponent(lblRemainingTime, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelSeats, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(24, 24, 24)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btn_confirm)
                     .addComponent(btn_cancel))
@@ -1957,12 +1973,19 @@ public class ReservationWindow extends javax.swing.JFrame {
         new MainMenu().setVisible(true);
         dispose();
     }//GEN-LAST:event_btn_cancelActionPerformed
+
+    private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+        clientController.cancelReservations();
+    }//GEN-LAST:event_formWindowClosed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        clientController.cancelReservations();
+    }//GEN-LAST:event_formWindowClosing
     /**
      * @param args the command line arguments
      */
-    /*public static void main(String args[]) {
-     /*
-     * Set the Nimbus look and feel
+    /*
+     * public static void main(String args[]) { /* Set the Nimbus look and feel
      */
     //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /*
@@ -1970,35 +1993,30 @@ public class ReservationWindow extends javax.swing.JFrame {
      * default look and feel. For details see
      * http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
      */
-    /*try {
-     for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-     if ("Nimbus".equals(info.getName())) {
-     javax.swing.UIManager.setLookAndFeel(info.getClassName());
-     break;
-     }
-     }
-     } catch (ClassNotFoundException ex) {
-     java.util.logging.Logger.getLogger(ReservationWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-     } catch (InstantiationException ex) {
-     java.util.logging.Logger.getLogger(ReservationWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-     } catch (IllegalAccessException ex) {
-     java.util.logging.Logger.getLogger(ReservationWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-     } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-     java.util.logging.Logger.getLogger(ReservationWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-     }
-     //</editor-fold>
-
-     /*
+    /*
+     * try { for (javax.swing.UIManager.LookAndFeelInfo info :
+     * javax.swing.UIManager.getInstalledLookAndFeels()) { if
+     * ("Nimbus".equals(info.getName())) {
+     * javax.swing.UIManager.setLookAndFeel(info.getClassName()); break; } } }
+     * catch (ClassNotFoundException ex) {
+     * java.util.logging.Logger.getLogger(ReservationWindow.class.getName()).log(java.util.logging.Level.SEVERE,
+     * null, ex); } catch (InstantiationException ex) {
+     * java.util.logging.Logger.getLogger(ReservationWindow.class.getName()).log(java.util.logging.Level.SEVERE,
+     * null, ex); } catch (IllegalAccessException ex) {
+     * java.util.logging.Logger.getLogger(ReservationWindow.class.getName()).log(java.util.logging.Level.SEVERE,
+     * null, ex); } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+     * java.util.logging.Logger.getLogger(ReservationWindow.class.getName()).log(java.util.logging.Level.SEVERE,
+     * null, ex); } //</editor-fold>
+     *
+     * /*
      * Create and display the form
      */
-    /*   java.awt.EventQueue.invokeLater(new Runnable() {
-
-     @Override
-     public void run() {
-     new ReservationWindow().setVisible(true);
-     }
-     });
-     }*/
+    /*
+     * java.awt.EventQueue.invokeLater(new Runnable() {
+     *
+     * @Override public void run() { new ReservationWindow().setVisible(true); }
+     * }); }
+     */
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btn_cancel;
     private javax.swing.JButton btn_confirm;
@@ -2108,43 +2126,35 @@ public class ReservationWindow extends javax.swing.JFrame {
     private javax.swing.JLabel seatJ9;
     // End of variables declaration//GEN-END:variables
     private javax.swing.JLabel seatLabels[][];
+    private int seatCont;
 
     private void showRemainingTime() {
 
         new Thread() {
+
             public void run() {
-                int tiempoRestante = 60;
+                int tiempoRestante = 59;
                 lblRemainingTime.setText("Tiempo Restante: " + tiempoRestante);
-                while(true){
+                while (true) {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException ex) {
                         Logger.getLogger(ReservationWindow.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                        tiempoRestante--;
-                        lblRemainingTime.setText("Tiempo restante: " + tiempoRestante);
-                        if(tiempoRestante <= 0){
-                            restartReservations();
-                            this.stop();
-                        }
+                    tiempoRestante--;
+                    lblRemainingTime.setText("Tiempo restante: " + tiempoRestante);
+                    if (tiempoRestante <= 0) {
+                        restartReservations();
+                        this.stop();
+                    }
                 }
             }
 
             private void restartReservations() {
-                //clientController.cancelReservations();
-                cancelAllPreReservations();
                 isFirstPreReservedSeat = true;
                 lblRemainingTime.setText(" ");
             }
-            
-            private void cancelAllPreReservations(){
-                while(!stack.empty()){
-                    JLabel seatLabel = (JLabel) stack.pop();
-                    Seat seat = (Seat) stack.pop();
-                    cancel_preReserveSeat(seat, seatLabel);
-                }
-            }
-            
+
         }.start();
 
 
@@ -2152,24 +2162,21 @@ public class ReservationWindow extends javax.swing.JFrame {
 
     private void lookAndFeel() {
         try {
-     for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-     if ("Nimbus".equals(info.getName())) {
-     javax.swing.UIManager.setLookAndFeel(info.getClassName());
-     break;
-     }
-     }
-     } catch (ClassNotFoundException ex) {
-     java.util.logging.Logger.getLogger(ReservationWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-     } catch (InstantiationException ex) {
-     java.util.logging.Logger.getLogger(ReservationWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-     } catch (IllegalAccessException ex) {
-     java.util.logging.Logger.getLogger(ReservationWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-     } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-     java.util.logging.Logger.getLogger(ReservationWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-     }
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(ReservationWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(ReservationWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(ReservationWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(ReservationWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
     }
 
-    private boolean hasReachedLimitSeats() {
-        return stack.size() >= 10;
-    }
 }

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 public class Reservation {
     private int id;
     private ArrayList<Seat> seats;
+    private CancelReservationTask cancelTask;
 
     public Reservation(int id) {
         this.id = id;
@@ -56,5 +57,19 @@ public class Reservation {
         }
         
         return false;
+    }
+
+    /**
+     * @return the cancelTask
+     */
+    public CancelReservationTask getCancelTask() {
+        return cancelTask;
+    }
+
+    /**
+     * @param cancelTask the cancelTask to set
+     */
+    public void setCancelTask(CancelReservationTask cancelTask) {
+        this.cancelTask = cancelTask;
     }
 }
